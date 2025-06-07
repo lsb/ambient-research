@@ -1,8 +1,4 @@
 import modal
-import os
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
-from typing import Optional
 
 app = modal.App("lsb-ambient-research-accelerated-models")
 
@@ -16,6 +12,7 @@ inference_image = modal.Image.debian_slim(python_version="3.12").pip_install(
     "optimum-quanto",
     "fastapi",
     "pydantic",
+    "uvicorn",
 ).env(
     {"HF_HUB_CACHE": MODEL_CACHE_PATH, "HF_HUB_ENABLE_HF_TRANSFER": "1"}
 )
@@ -68,42 +65,46 @@ class Inference:
     def llm(self, text):
         return self.llmpipe(text, max_new_tokens=40000)
 
-class TranscribeRequest(BaseModel):
-    audio_data: str
-
-class LLMRequest(BaseModel):
-    text: str
-
-class TranscribeResponse(BaseModel):
-    transcription: Optional[dict]
-    error: Optional[str] = None
-
-class LLMResponse(BaseModel):
-    response: Optional[list]
-    error: Optional[str] = None
-
-web_app = FastAPI()
-inference_instance = Inference()
-
-@web_app.post("/transcribe", response_model=TranscribeResponse)
-async def transcribe_audio(request: TranscribeRequest):
-    try:
-        result = inference_instance.transcribe.remote(request.audio_data)
-        if result is None:
-            return TranscribeResponse(transcription=None, error="Invalid audio data")
-        return TranscribeResponse(transcription=result)
-    except Exception as e:
-        return TranscribeResponse(transcription=None, error=str(e))
-
-@web_app.post("/llm", response_model=LLMResponse)
-async def generate_text(request: LLMRequest):
-    try:
-        result = inference_instance.llm.remote(request.text)
-        return LLMResponse(response=result)
-    except Exception as e:
-        return LLMResponse(response=None, error=str(e))
-
 @app.function(image=inference_image)
 @modal.asgi_app()
 def fastapi_app():
+    from fastapi import FastAPI, HTTPException
+    from pydantic import BaseModel
+    from typing import Optional
+    
+    class TranscribeRequest(BaseModel):
+        audio_data: str
+
+    class LLMRequest(BaseModel):
+        text: str
+
+    class TranscribeResponse(BaseModel):
+        transcription: Optional[dict]
+        error: Optional[str] = None
+
+    class LLMResponse(BaseModel):
+        response: Optional[list]
+        error: Optional[str] = None
+
+    web_app = FastAPI()
+    inference_instance = Inference()
+
+    @web_app.post("/transcribe", response_model=TranscribeResponse)
+    async def transcribe_audio(request: TranscribeRequest):
+        try:
+            result = inference_instance.transcribe.remote(request.audio_data)
+            if result is None:
+                return TranscribeResponse(transcription=None, error="Invalid audio data")
+            return TranscribeResponse(transcription=result)
+        except Exception as e:
+            return TranscribeResponse(transcription=None, error=str(e))
+
+    @web_app.post("/llm", response_model=LLMResponse)
+    async def generate_text(request: LLMRequest):
+        try:
+            result = inference_instance.llm.remote(request.text)
+            return LLMResponse(response=result)
+        except Exception as e:
+            return LLMResponse(response=None, error=str(e))
+
     return web_app
