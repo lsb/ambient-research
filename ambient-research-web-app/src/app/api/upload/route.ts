@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
 
     let transcriptionResult = null;
     try {
-      const transcribeResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/transcribe`, {
+      const transcribeResponse = await fetch('https://lsb--lsb-ambient-research-accelerated-models-fastapi-app.modal.run/transcribe', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

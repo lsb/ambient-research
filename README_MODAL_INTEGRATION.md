@@ -7,7 +7,7 @@ This document describes the Modal integration for GPU-accelerated audio transcri
 The integration consists of:
 
 1. **Modal Endpoints** (`modal_endpoints.py`) - FastAPI app deployed on Modal with GPU inference
-2. **TypeScript API Routes** - Next.js API routes that proxy requests to Modal
+2. **TypeScript Integration** - Direct HTTP calls to Modal endpoints from frontend
 3. **Audio Processing Pipeline** - Integration with existing mu6 audio encoding
 
 ## Components
@@ -17,11 +17,10 @@ The integration consists of:
 - **Transcribe Endpoint**: `/transcribe` - Converts mu6-encoded audio to text using Whisper
 - **LLM Endpoint**: `/llm` - Generates text using Qwen3-32B model
 
-### TypeScript API Routes
+### TypeScript Integration
 
-- `/api/transcribe` - Proxy to Modal transcribe endpoint
-- `/api/llm` - Proxy to Modal LLM endpoint
-- `/api/upload` - Enhanced to automatically transcribe uploaded audio
+- `/api/upload` - Enhanced to automatically transcribe uploaded audio via direct Modal calls
+- Frontend calls Modal endpoints directly via HTTP
 
 ## Deployment
 
@@ -37,11 +36,7 @@ python deploy_modal.py
 
 ### Configure Environment Variables
 
-Copy `.env.local.example` to `.env.local` and update the Modal endpoint URLs:
-
-```bash
-cp .env.local.example .env.local
-```
+No environment variables needed - Modal endpoints are called directly from frontend code.
 
 ### Run the TypeScript App
 
@@ -62,20 +57,20 @@ The existing audio upload flow now automatically includes transcription:
 3. Audio is automatically sent to Modal for transcription
 4. Transcription result is returned alongside the upload response
 
-### Direct API Usage
+### Direct Modal API Usage
 
-You can also call the endpoints directly:
+Call the Modal endpoints directly from your frontend:
 
 ```javascript
 // Transcribe audio
-const response = await fetch('/api/transcribe', {
+const response = await fetch('https://lsb--lsb-ambient-research-accelerated-models-fastapi-app.modal.run/transcribe', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({ audio_data: mu6String })
 });
 
 // Generate text
-const response = await fetch('/api/llm', {
+const response = await fetch('https://lsb--lsb-ambient-research-accelerated-models-fastapi-app.modal.run/llm', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({ text: "Your prompt here" })
