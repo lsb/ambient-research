@@ -1,0 +1,24 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model AudioRecording {
+  id               Int      @id @default(autoincrement())
+  audioData        String   @map("audio_data")
+  clientTimestamp  String   @map("client_timestamp")
+  conversationId   String   @map("conversation_id")
+  serverTimestamp  String   @map("server_timestamp")
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  @@index([conversationId], map: "idx_conversation_id")
+  @@index([clientTimestamp], map: "idx_client_timestamp")
+  @@map("audio_recordings")
+}

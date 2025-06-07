@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
     }
 
     const db = getDatabase();
-    const recording = db.insertAudioRecording({
+    const recording = await db.insertAudioRecording({
       audio_data: audioData,
       client_timestamp: clientTimestamp,
       conversation_id: conversationId
