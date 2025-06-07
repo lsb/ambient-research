@@ -22,6 +22,7 @@ else
 fi
 
 echo "🗄️  Setting up database with Prisma..."
+export $(cat .env.local | xargs)
 npx prisma generate
 npx prisma migrate dev --name init
 
