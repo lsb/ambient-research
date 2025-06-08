@@ -26,11 +26,30 @@ export async function POST(request: NextRequest) {
       conversation_id: conversationId
     });
 
+    let transcriptionResult = null;
+    try {
+      const transcribeResponse = await fetch('https://lsb--lsb-ambient-research-accelerated-models-fastapi-app.modal.run/transcribe', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ audio_data: audioData })
+      });
+      
+      if (transcribeResponse.ok) {
+        const transcribeData = await transcribeResponse.json();
+        transcriptionResult = transcribeData.transcription;
+      }
+    } catch (transcribeError) {
+      console.warn('Transcription failed:', transcribeError);
+    }
+
     return NextResponse.json({
       success: true,
       id: recording.id,
       server_timestamp: recording.server_timestamp,
-      message: 'Audio data stored successfully'
+      message: 'Audio data stored successfully',
+      transcription: transcriptionResult
     });
 
   } catch (error) {
