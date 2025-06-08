@@ -30,7 +30,7 @@ The integration consists of:
 # Install Modal CLI if not already installed
 pip install modal
 
-# Deploy the endpoints
+# Deploy the endpoints (now uses gpu_models_on_modal.py from root directory)
 python deploy_modal.py
 ```
 
