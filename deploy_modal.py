@@ -9,7 +9,7 @@ def main():
     try:
         print("Deploying Modal endpoints...")
         result = subprocess.run([
-            "modal", "deploy", "modal_endpoints.py"
+            "modal", "deploy", "gpu_models_on_modal.py"
         ], check=True, capture_output=True, text=True)
         
         print("Deployment successful!")
